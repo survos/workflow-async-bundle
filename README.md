@@ -25,13 +25,25 @@ use Survos\WorkflowAsyncBundle\Attribute\Transition;
 use Symfony\Component\Workflow\Attribute\AsWorkflow;
 use Symfony\Component\Workflow\Attribute\Place;
 
-#[AsWorkflow(name: 'packages', supports: Package::class)]
+#[AsWorkflow(
+    name: 'packages',
+    supports: Package::class,
+    metadata: ['description' => 'Load package metadata from Packagist'],
+)]
 final class PackageWorkflow
 {
-    #[Place(initial: true)]
+    #[Place(initial: true, metadata: ['description' => 'Package discovered; metadata not yet loaded'])]
     public const DISCOVERED = 'discovered';
 
-    #[Transition(self::DISCOVERED, 'loaded', transport: 'package_metadata')]
+    #[Place(metadata: ['description' => 'Package metadata loaded'])]
+    public const LOADED = 'loaded';
+
+    #[Transition(
+        self::DISCOVERED,
+        self::LOADED,
+        metadata: ['description' => 'Fetch package metadata from Packagist'],
+        transport: 'package_metadata',
+    )]
     public const LOAD = 'load';
 }
 ```
@@ -43,10 +55,20 @@ values. It is repeatable. The equivalent native declaration is:
 ```php
 #[\Symfony\Component\Workflow\Attribute\Transition(
     from: self::DISCOVERED,
-    to: 'loaded',
-    metadata: ['async' => true, 'transport' => 'package_metadata'],
+    to: self::LOADED,
+    metadata: [
+        'description' => 'Fetch package metadata from Packagist',
+        'async' => true,
+        'transport' => 'package_metadata',
+    ],
 )]
 ```
+
+Both endpoints reference declared place constants: changing a place's stored value
+requires editing only its declaration. We explicitly declare and describe every
+place and transition instead of relying on inferred places. That gives humans
+and tools a complete, documented definition. Native backed enum cases work too;
+enums are optional.
 
 That equivalence also lets workflow-extras attributes opt into async without a
 mandatory dependency between the two bundles. Use one transition attribute for
