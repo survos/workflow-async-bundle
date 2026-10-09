@@ -1,0 +1,13 @@
+{
+    "packages": {
+        "demo/example-bundle": [
+            {
+                "name": "demo/example-bundle",
+                "version": "1.0.0",
+                "type": "symfony-bundle",
+                "require": {"php": "^8.5", "symfony/http-kernel": "^8.0"},
+                "source": {"url": "https://github.com/demo/example-bundle.git", "reference": "0123456789abcdef"}
+            }
+        ]
+    }
+}

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php" failOnWarning="true" failOnRisky="true" cacheDirectory=".phpunit.cache">
+<testsuites><testsuite name="Workflow scaffolds"><directory>tests</directory><directory>../../tests</directory><directory>../../../workflow-extras-bundle/tests</directory></testsuite></testsuites>
+</phpunit>
