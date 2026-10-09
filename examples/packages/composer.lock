@@ -468,7 +468,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../../workflow-extras-bundle",
-                "reference": "ee1637f77d88f5a2fe112904cba6c8180bb43b47"
+                "reference": "26f2c3c596e450527f92c817905579fb152d3c42"
             },
             "require": {
                 "php": "^8.5",
@@ -480,6 +480,9 @@
             },
             "require-dev": {
                 "phpunit/phpunit": "^13.0"
+            },
+            "suggest": {
+                "survos/workflow-async-bundle": "Execute transitions marked async through Symfony Messenger"
             },
             "type": "symfony-bundle",
             "extra": {

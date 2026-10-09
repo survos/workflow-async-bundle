@@ -11,5 +11,6 @@ interface SubjectStoreInterface
 {
     public function load(SubjectReference $reference): ?object;
 
-    public function save(SubjectReference $reference, object $subject): void;
+    /** Context from apply(), for application-owned continuation/persistence policy. */
+    public function save(SubjectReference $reference, object $subject, array $context = []): void;
 }

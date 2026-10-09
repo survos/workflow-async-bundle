@@ -101,7 +101,9 @@ kit still depends on HttpKernel.
 Implement [SubjectStoreInterface](src/Contract/SubjectStoreInterface.php) and
 register it as a service. A reference contains a stable domain `type` and string
 `id`. The adapter validates the type, loads a fresh subject and saves successful
-changes. A plain object with a `marking` property works; Doctrine is optional.
+changes. Its `save(SubjectReference $reference, object $subject, array $context = [])`
+method receives the original apply context so application-owned continuation policy
+can honor options such as `cascade: none`. A plain object with a `marking` property works; Doctrine is optional.
 For a Doctrine application, use the entity's own manager, and define the
 transaction/locking policy explicitly rather than flushing unrelated work.
 

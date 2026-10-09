@@ -82,6 +82,19 @@ final class AsyncTest extends TestCase
         $handler(new TransitionRequest('test', new SubjectReference('test', '1'), 'go', ['trace' => 123], 'request-1'));
     }
 
+    public function testSuccessfulApplyPassesContextToPersistence(): void
+    {
+        $workflow = $this->workflow([['async' => true]]);
+        $subject = new class { public string $marking = 'a'; };
+        $reference = new SubjectReference('test', '1');
+        $store = $this->createMock(SubjectStoreInterface::class);
+        $store->method('load')->willReturn($subject);
+        $store->expects(self::once())->method('save')->with($reference, $subject, ['cascade' => 'none']);
+        $handler = new TransitionHandler($store, new WorkflowLocator(new ServiceLocator(['test' => static fn () => $workflow])), new TransitionRouter('downloads', ['downloads']));
+        self::assertSame('applied', $handler(new TransitionRequest('test', $reference, 'go', ['cascade' => 'none'], 'request-1'))->status);
+        self::assertSame('b', $subject->marking);
+    }
+
     private function workflow(array $metadata): StateMachine
     {
         $transitions = [];

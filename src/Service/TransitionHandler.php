@@ -43,7 +43,7 @@ final readonly class TransitionHandler
 
             return new TransitionResult($request->requestId, 'blocked', $reasons);
         }
-        $this->store->save($request->subject, $subject);
+        $this->store->save($request->subject, $subject, $request->context);
 
         return new TransitionResult($request->requestId, 'applied');
     }

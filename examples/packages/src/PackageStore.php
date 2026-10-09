@@ -29,7 +29,7 @@ final readonly class PackageStore implements SubjectStoreInterface
         return $package;
     }
 
-    public function save(SubjectReference $reference, object $subject): void
+    public function save(SubjectReference $reference, object $subject, array $context = []): void
     {
         if (!$subject instanceof Package || $subject->name !== $reference->id) {
             throw new \InvalidArgumentException('Subject does not match its package reference.');
