@@ -95,6 +95,18 @@ final class AsyncTest extends TestCase
         self::assertSame('b', $subject->marking);
     }
 
+    public function testMissingSubjectFailsInsteadOfBeingAcknowledged(): void
+    {
+        $workflow = $this->workflow([['async' => true]]);
+        $store = $this->createMock(SubjectStoreInterface::class);
+        $store->method('load')->willReturn(null);
+        $store->expects(self::never())->method('save');
+        $handler = new TransitionHandler($store, new WorkflowLocator(new ServiceLocator(['test' => static fn () => $workflow])), new TransitionRouter('downloads', ['downloads']));
+        $this->expectException(\Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException::class);
+        $this->expectExceptionMessage('Missing subject for workflow "test" transition "go".');
+        $handler(new TransitionRequest('test', new SubjectReference('test', 'gone'), 'go', [], 'request-1'));
+    }
+
     private function workflow(array $metadata): StateMachine
     {
         $transitions = [];
