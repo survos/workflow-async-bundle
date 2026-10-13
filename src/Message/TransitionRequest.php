@@ -15,7 +15,7 @@ final readonly class TransitionRequest
         public string $requestId = '',
         public int $version = 1,
     ) {
-        if ($workflow === '' || $transition === '' || $requestId === '' || $version !== 1) {
+        if ('' === $workflow || '' === $transition || '' === $requestId || 1 !== $version) {
             throw new \InvalidArgumentException('A version-1 transition request needs workflow, transition and request ID.');
         }
         self::validateContext($context);
@@ -28,7 +28,7 @@ final readonly class TransitionRequest
         foreach ($context as $value) {
             if (is_array($value)) {
                 self::validateContext($value);
-            } elseif ($value !== null && !is_scalar($value)) {
+            } elseif (null !== $value && !is_scalar($value)) {
                 throw new \InvalidArgumentException('Context must contain only arrays, scalar values and null.');
             }
         }

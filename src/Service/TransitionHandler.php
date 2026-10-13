@@ -20,7 +20,7 @@ final readonly class TransitionHandler
 
     public function __invoke(TransitionRequest $request): TransitionResult
     {
-        if ($request->version !== 1) {
+        if (1 !== $request->version) {
             throw new UnrecoverableMessageHandlingException('Unsupported workflow request version.');
         }
         try {
@@ -30,7 +30,7 @@ final readonly class TransitionHandler
             throw new UnrecoverableMessageHandlingException($e->getMessage(), previous: $e);
         }
         $subject = $this->store->load($request->subject);
-        if ($subject === null) {
+        if (null === $subject) {
             // Fail loudly, never ack: retrying cannot make the subject appear, so the failure transport.
             throw new UnrecoverableMessageHandlingException(sprintf('Missing subject for workflow "%s" transition "%s".', $request->workflow, $request->transition));
         }

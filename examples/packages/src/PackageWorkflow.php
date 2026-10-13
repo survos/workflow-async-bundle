@@ -8,9 +8,9 @@ use Composer\Semver\Semver;
 use Survos\WorkflowAsyncBundle\Attribute\Transition as AsyncTransition;
 use Survos\WorkflowExtrasBundle\Attribute\Place;
 use Survos\WorkflowExtrasBundle\Attribute\Transition;
+use Symfony\Component\Workflow\Attribute\AsGuardListener;
 use Symfony\Component\Workflow\Attribute\AsTransitionListener;
 use Symfony\Component\Workflow\Attribute\AsWorkflow;
-use Symfony\Component\Workflow\Attribute\AsGuardListener;
 use Symfony\Component\Workflow\Event\GuardEvent;
 use Symfony\Component\Workflow\Event\TransitionEvent;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -54,7 +54,7 @@ final readonly class PackageWorkflow
     {
         $eligible = $event->getSubject()->eligible;
         $name = $event->getTransition()->getName();
-        if ((in_array($name, [self::VALIDATE, self::FETCH_README], true) && !$eligible) || ($name === self::REJECT && $eligible)) {
+        if ((in_array($name, [self::VALIDATE, self::FETCH_README], true) && !$eligible) || (self::REJECT === $name && $eligible)) {
             $event->setBlocked(true, 'The selected package release does not match this transition.');
         }
     }
@@ -109,7 +109,7 @@ final readonly class PackageWorkflow
             'query' => ['ref' => $source['reference']],
             'headers' => ['Accept' => 'application/vnd.github.raw+json', 'User-Agent' => 'Survos-Workflow-Example'],
         ]);
-        if ($response->getStatusCode() === 404) {
+        if (404 === $response->getStatusCode()) {
             $package->readmeStatus = 'missing';
 
             return;

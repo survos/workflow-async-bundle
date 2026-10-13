@@ -85,7 +85,9 @@ final class AsyncTest extends TestCase
     public function testSuccessfulApplyPassesContextToPersistence(): void
     {
         $workflow = $this->workflow([['async' => true]]);
-        $subject = new class { public string $marking = 'a'; };
+        $subject = new class {
+            public string $marking = 'a';
+        };
         $reference = new SubjectReference('test', '1');
         $store = $this->createMock(SubjectStoreInterface::class);
         $store->method('load')->willReturn($subject);

@@ -40,7 +40,7 @@ final readonly class PackageStore implements SubjectStoreInterface
         }
         $temporary = tempnam($this->directory, 'package-');
         try {
-            if ($temporary === false || file_put_contents($temporary, json_encode($subject, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)) === false || !rename($temporary, $path)) {
+            if (false === $temporary || false === file_put_contents($temporary, json_encode($subject, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)) || !rename($temporary, $path)) {
                 throw new \RuntimeException('Cannot save package.');
             }
         } finally {
@@ -52,7 +52,7 @@ final readonly class PackageStore implements SubjectStoreInterface
 
     private function path(SubjectReference $reference): string
     {
-        if ($reference->type !== 'package') {
+        if ('package' !== $reference->type) {
             throw new \InvalidArgumentException('Unsupported subject type.');
         }
 

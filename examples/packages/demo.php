@@ -29,7 +29,7 @@ if ($offline) {
 }
 $store = $container->get(PackageStore::class);
 $reference = new SubjectReference('package', $name);
-if ($store->load($reference) !== null) {
+if (null !== $store->load($reference)) {
     throw new RuntimeException('This package already has saved state. Use another package or remove its demo JSON file in var/subjects to start over.');
 }
 $store->save($reference, new Package($name));
@@ -42,7 +42,7 @@ $dispatcher->dispatch('package_readme', $reference, PackageWorkflow::LOAD);
 printf("Queued load on package_metadata; marking is still %s\n", $store->load($reference)->marking);
 RunQueue::once('package_metadata', $container->get('example.messenger.transport.package_metadata'), $bus);
 $package = $store->load($reference);
-if ($package->marking !== PackageWorkflow::LOADED) {
+if (PackageWorkflow::LOADED !== $package->marking) {
     throw new RuntimeException('Metadata worker failed; inspect the HTTP response and retry from saved state.');
 }
 $transition = $next->firstEnabled($workflow, $package, [PackageWorkflow::VALIDATE, PackageWorkflow::REJECT]);
@@ -59,7 +59,7 @@ $dispatcher->dispatch('package_readme', $reference, PackageWorkflow::FETCH_READM
 echo "Queued fetch_readme on package_readme\n";
 RunQueue::once('package_readme', $container->get('example.messenger.transport.package_readme'), $bus);
 $package = $store->load($reference);
-if ($package->marking !== PackageWorkflow::README_CHECKED) {
+if (PackageWorkflow::README_CHECKED !== $package->marking) {
     throw new RuntimeException('README worker failed; package remains valid and can be retried.');
 }
 printf("%s: %s; README %s (%d bytes)\n", $package->name, $package->marking, $package->readmeStatus, strlen($package->readme ?? ''));

@@ -27,7 +27,7 @@ class Transition extends NativeTransition
                 throw new \InvalidArgumentException(sprintf('Use the "%s" argument instead of conflicting metadata.', $key));
             }
         }
-        if (!$async && $transport !== null) {
+        if (!$async && null !== $transport) {
             throw new \InvalidArgumentException('A transport requires async: true.');
         }
         parent::__construct($from, $to, description: $description, guard: $guard, metadata: array_replace($metadata, ['async' => $async, 'transport' => $transport]));
