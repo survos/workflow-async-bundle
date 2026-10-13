@@ -23,7 +23,7 @@ final class AsyncTest extends TestCase
 {
     public function testAttributePreservesNativeArgumentsAndUsesTypedRouting(): void
     {
-        $attribute = new AsyncTransition('a', 'b', guard: 'subject.ready', description: 'Fetch', transport: 'downloads');
+        $attribute = new AsyncTransition('a', 'b', 'Fetch', 'subject.ready', transport: 'downloads');
         self::assertSame('subject.ready', $attribute->guard);
         self::assertSame(['async' => true, 'transport' => 'downloads', 'description' => 'Fetch'], $attribute->metadata);
     }

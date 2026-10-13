@@ -7,14 +7,17 @@ namespace Survos\WorkflowAsyncBundle\Attribute;
 use Symfony\Component\Workflow\Arc;
 use Symfony\Component\Workflow\Attribute\Transition as NativeTransition;
 
+/**
+ * Native Transition (from, to, description, guard, metadata) plus `async` and `transport`.
+ */
 #[\Attribute(\Attribute::TARGET_CLASS_CONSTANT | \Attribute::IS_REPEATABLE)]
 class Transition extends NativeTransition
 {
     public function __construct(
         \BackedEnum|Arc|string|array $from,
         \BackedEnum|Arc|string|array $to,
-        ?string $guard = null,
         ?string $description = null,
+        ?string $guard = null,
         array $metadata = [],
         bool $async = true,
         ?string $transport = null,
@@ -27,6 +30,6 @@ class Transition extends NativeTransition
         if (!$async && $transport !== null) {
             throw new \InvalidArgumentException('A transport requires async: true.');
         }
-        parent::__construct($from, $to, $guard, $description, array_replace($metadata, ['async' => $async, 'transport' => $transport]));
+        parent::__construct($from, $to, description: $description, guard: $guard, metadata: array_replace($metadata, ['async' => $async, 'transport' => $transport]));
     }
 }

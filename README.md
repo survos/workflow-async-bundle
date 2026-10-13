@@ -16,7 +16,8 @@ workflow attributes. [#66722](https://github.com/symfony/symfony/pull/66722) add
 `Place(initial: true)`, and [#66687](https://github.com/symfony/symfony/pull/66687)
 made `AsWorkflow`, `Place` and `Transition` extensible, and
 [#66872](https://github.com/symfony/symfony/pull/66872) gave them a native
-`description` argument. All four are merged into 8.2. This package builds on that
+`description` argument, which [#66890](https://github.com/symfony/symfony/pull/66890)
+made the third `Transition` argument. All are merged into 8.2. This package builds on that
 work instead of maintaining another definition reader or registrar.
 
 You can use native attributes with metadata, or the optional typed attribute:
