@@ -6,10 +6,10 @@ namespace Survos\WorkflowExample;
 
 use Composer\Semver\Semver;
 use Survos\WorkflowAsyncBundle\Attribute\Transition as AsyncTransition;
-use Survos\WorkflowExtrasBundle\Attribute\AsWorkflow;
 use Survos\WorkflowExtrasBundle\Attribute\Place;
 use Survos\WorkflowExtrasBundle\Attribute\Transition;
 use Symfony\Component\Workflow\Attribute\AsTransitionListener;
+use Symfony\Component\Workflow\Attribute\AsWorkflow;
 use Symfony\Component\Workflow\Attribute\AsGuardListener;
 use Symfony\Component\Workflow\Event\GuardEvent;
 use Symfony\Component\Workflow\Event\TransitionEvent;
@@ -33,16 +33,16 @@ final readonly class PackageWorkflow
     #[Place('README check completed')]
     public const README_CHECKED = 'readme_checked';
 
-    #[AsyncTransition(self::DISCOVERED, self::LOADED, transport: 'package_metadata', metadata: ['description' => 'Fetch release metadata from Packagist'])]
+    #[AsyncTransition(self::DISCOVERED, self::LOADED, transport: 'package_metadata', description: 'Fetch release metadata from Packagist')]
     public const LOAD = 'load';
 
-    #[Transition(self::LOADED, self::VALID, 'Validate package eligibility')]
+    #[Transition(self::LOADED, self::VALID, description: 'Validate package eligibility')]
     public const VALIDATE = 'validate';
 
-    #[Transition(self::LOADED, self::REJECTED, 'Skip an ineligible package')]
+    #[Transition(self::LOADED, self::REJECTED, description: 'Skip an ineligible package')]
     public const REJECT = 'reject';
 
-    #[AsyncTransition(self::VALID, self::README_CHECKED, transport: 'package_readme', metadata: ['description' => 'Fetch README at the selected release revision'])]
+    #[AsyncTransition(self::VALID, self::README_CHECKED, transport: 'package_readme', description: 'Fetch README at the selected release revision')]
     public const FETCH_README = 'fetch_readme';
 
     public function __construct(private HttpClientInterface $http)

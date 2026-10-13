@@ -14,6 +14,7 @@ class Transition extends NativeTransition
         \BackedEnum|Arc|string|array $from,
         \BackedEnum|Arc|string|array $to,
         ?string $guard = null,
+        ?string $description = null,
         array $metadata = [],
         bool $async = true,
         ?string $transport = null,
@@ -26,6 +27,6 @@ class Transition extends NativeTransition
         if (!$async && $transport !== null) {
             throw new \InvalidArgumentException('A transport requires async: true.');
         }
-        parent::__construct($from, $to, $guard, array_replace($metadata, ['async' => $async, 'transport' => $transport]));
+        parent::__construct($from, $to, $guard, $description, array_replace($metadata, ['async' => $async, 'transport' => $transport]));
     }
 }

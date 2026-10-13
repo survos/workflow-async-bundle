@@ -14,9 +14,10 @@ revisions; existing applications are not upgraded by this repository change.
 [Symfony #61935](https://github.com/symfony/symfony/pull/61935) introduced native
 workflow attributes. [#66722](https://github.com/symfony/symfony/pull/66722) added
 `Place(initial: true)`, and [#66687](https://github.com/symfony/symfony/pull/66687)
-made `AsWorkflow`, `Place` and `Transition` extensible. All three are merged into
-8.2. This package builds on that work instead of maintaining another definition
-reader or registrar.
+made `AsWorkflow`, `Place` and `Transition` extensible, and
+[#66872](https://github.com/symfony/symfony/pull/66872) gave them a native
+`description` argument. All four are merged into 8.2. This package builds on that
+work instead of maintaining another definition reader or registrar.
 
 You can use native attributes with metadata, or the optional typed attribute:
 
@@ -28,20 +29,20 @@ use Symfony\Component\Workflow\Attribute\Place;
 #[AsWorkflow(
     name: 'packages',
     supports: Package::class,
-    metadata: ['description' => 'Load package metadata from Packagist'],
+    description: 'Load package metadata from Packagist',
 )]
 final class PackageWorkflow
 {
-    #[Place(initial: true, metadata: ['description' => 'Package discovered; metadata not yet loaded'])]
+    #[Place('Package discovered; metadata not yet loaded', initial: true)]
     public const DISCOVERED = 'discovered';
 
-    #[Place(metadata: ['description' => 'Package metadata loaded'])]
+    #[Place('Package metadata loaded')]
     public const LOADED = 'loaded';
 
     #[Transition(
         self::DISCOVERED,
         self::LOADED,
-        metadata: ['description' => 'Fetch package metadata from Packagist'],
+        description: 'Fetch package metadata from Packagist',
         transport: 'package_metadata',
     )]
     public const LOAD = 'load';
@@ -49,15 +50,15 @@ final class PackageWorkflow
 ```
 
 Our `Transition` defaults to `async: true`. Native arguments (`from`, `to`, `guard`,
-`metadata`) retain their types and order, including enum cases and weighted `Arc`
+`description`, `metadata`) retain their types and order, including enum cases and weighted `Arc`
 values. It is repeatable. The equivalent native declaration is:
 
 ```php
 #[\Symfony\Component\Workflow\Attribute\Transition(
     from: self::DISCOVERED,
     to: self::LOADED,
+    description: 'Fetch package metadata from Packagist',
     metadata: [
-        'description' => 'Fetch package metadata from Packagist',
         'async' => true,
         'transport' => 'package_metadata',
     ],
