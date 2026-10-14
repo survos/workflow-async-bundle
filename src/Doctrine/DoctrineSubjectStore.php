@@ -8,14 +8,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Proxy;
 use Survos\WorkflowExtrasBundle\Service\WorkflowCatalog;
-use Survos\WorkflowMessengerBundle\Contract\SubjectStoreInterface;
+use Survos\WorkflowMessengerBundle\Contract\BatchSubjectStoreInterface;
 use Survos\WorkflowMessengerBundle\Message\SubjectReference;
 
 /**
  * Default store for Doctrine entities: the reference is the entity class and its
  * single identifier. Only classes a workflow declares in `supports` are loaded.
  */
-final readonly class DoctrineSubjectStore implements SubjectStoreInterface
+final readonly class DoctrineSubjectStore implements BatchSubjectStoreInterface
 {
     public function __construct(private ManagerRegistry $doctrine, private WorkflowCatalog $catalog)
     {
@@ -55,6 +55,33 @@ final readonly class DoctrineSubjectStore implements SubjectStoreInterface
             throw new \InvalidArgumentException('Workflow subject does not match its reference.');
         }
         $this->manager($reference->type)->flush();
+    }
+
+    public function saveBatch(array $changes): void
+    {
+        $managers = [];
+        foreach ($changes as [$reference, $subject]) {
+            if ($this->reference($subject) != $reference) {
+                throw new \InvalidArgumentException('Workflow subject does not match its reference.');
+            }
+            $manager = $this->manager($reference->type);
+            $managers[spl_object_id($manager)] = $manager;
+        }
+        foreach ($managers as $manager) {
+            $manager->flush();
+        }
+    }
+
+    public function discardBatch(array $references): void
+    {
+        $managers = [];
+        foreach ($references as $reference) {
+            $manager = $this->manager($reference->type);
+            $managers[spl_object_id($manager)] = $manager;
+        }
+        foreach ($managers as $manager) {
+            $manager->clear();
+        }
     }
 
     private function manager(string $class): EntityManagerInterface

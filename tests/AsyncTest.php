@@ -30,6 +30,20 @@ final class AsyncTest extends TestCase
         self::assertSame(['async' => true, 'transport' => 'downloads', 'guard' => 'subject.ready', 'description' => 'Fetch'], $attribute->metadata);
     }
 
+    public function testBatchSizeIsExplicitAndPositive(): void
+    {
+        $attribute = new AsyncTransition('a', 'b', transport: 'downloads', batch: 500);
+        self::assertSame(500, $attribute->metadata['batch']);
+        $this->expectException(\InvalidArgumentException::class);
+        new AsyncTransition('a', 'b', batch: 0);
+    }
+
+    public function testSynchronousBatchIsRejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        new AsyncTransition('a', 'b', async: false, batch: 500);
+    }
+
     public function testConflictingAttributeMetadataIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -48,7 +62,7 @@ final class AsyncTest extends TestCase
                 self::assertSame($parameter->getDefaultValue(), $async[$i]->getDefaultValue());
             }
         }
-        self::assertSame(['async', 'transport'], array_map(static fn ($p) => $p->getName(), array_slice($async, count($extras))));
+        self::assertSame(['async', 'transport', 'batch'], array_map(static fn ($p) => $p->getName(), array_slice($async, count($extras))));
         $attribute = new AsyncTransition('a', 'b', 'Fetch', 'Load', 'validate', 'subject.ready', ['color' => 'blue'], 'tabler:download', 'text-primary', true, 'downloads');
         self::assertInstanceOf(\Survos\WorkflowExtrasBundle\Attribute\Transition::class, $attribute);
         self::assertSame('Load', $attribute->metadata['label']);

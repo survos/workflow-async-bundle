@@ -1,4 +1,4 @@
-# Workflow Async Bundle
+# Workflow Messenger Bundle
 
 Queue **native Symfony 8.2 workflow transitions** through Messenger. Symfony owns
 workflow definitions, guards, marking and events. This bundle supplies an explicit
@@ -52,10 +52,10 @@ final class PackageWorkflow
 
 Our `Transition` extends workflow-extras and defaults to `async: true`. Its signature is:
 
-`from, to, description, label, next, guard, metadata, icon, iconClass, async, transport`
+`from, to, description, label, next, guard, metadata, icon, iconClass, async, transport, batch`
 
-Every extras argument keeps its name, type, position and default; only `async`
-and `transport` are appended. Enum endpoints, weighted arcs, label and string-or-list
+Every extras argument keeps its name, type, position and default; only `async`,
+`transport` and `batch` are appended. Enum endpoints, weighted arcs, label and string-or-list
 next candidates are supported. Use named arguments after description when migrating
 from the old native-order signature. The attribute is repeatable. Equivalent native metadata:
 
@@ -261,3 +261,42 @@ reference(object), reload the subject, and make save() a safe persistence bounda
 The native completed listener never dispatches before that boundary. Applications
 calling native apply directly can use an explicit post-flush adapter. A failed save
 must not schedule follow-on work. No nested workflow event flush is performed.
+
+## Batch transitions
+
+Use `batch: 500` on an async transition to collect requests for the same workflow,
+subject type and transition in a worker. Set the transport prefetch to at least
+that size; otherwise a broker may deliver only one unacknowledged request at a time.
+A partial group flushes after five idle seconds or when Messenger forces a flush
+(for example when stopping the worker). Direct synchronous execution remains per subject.
+
+```php
+#[Transition(self::NEW, self::DISPATCHED, transport: 'media.dispatch', batch: 500)]
+public const DISPATCH = 'dispatch';
+
+#[AsBatchTransitionListener('media', self::DISPATCH)]
+public function submitBatch(BatchTransitionEvent $event): void
+{
+    // One bulk API request using $event->subjects.
+}
+```
+
+Import `AsBatchTransitionListener` from `Survos\WorkflowMessengerBundle\Attribute`
+and `BatchTransitionEvent` from `Survos\WorkflowMessengerBundle\Event`.
+The bulk listener runs under the same subject locks as ordinary transitions,
+after missing subjects and blocked transitions have been filtered out. Duplicate
+requests in a group share one application and each receive their own result.
+
+The ordinary transition listener still runs for each subject. It can skip its
+per-item API call when the context contains `BatchTransitionEvent::CONTEXT_BATCHED`.
+The bulk listener can call `skip($subject)` to run that subject's ordinary listener
+without the flag, or `release($subject)` to requeue it for individual execution.
+Release preserves context and uses the transition's configured transport.
+
+The default Doctrine store validates references and flushes once per manager for
+the group. Custom stores can implement `BatchSubjectStoreInterface` (`saveBatch()` and
+`discardBatch()`);
+otherwise each subject is saved separately. All saves finish before automatic
+`next` continuations and successful acknowledgments. Listener or persistence
+failures discard unsaved group changes and nack pending requests; missing subjects are unrecoverable. Bulk operations
+must be idempotent because retries can repeat external side effects.

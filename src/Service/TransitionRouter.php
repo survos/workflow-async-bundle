@@ -13,6 +13,32 @@ final readonly class TransitionRouter
     {
     }
 
+    public function batchSize(WorkflowInterface $workflow, string $name): ?int
+    {
+        $size = null;
+        $found = false;
+        foreach ($workflow->getDefinition()->getTransitions() as $transition) {
+            if ($transition->getName() !== $name) {
+                continue;
+            }
+            $metadata = $workflow->getMetadataStore()->getTransitionMetadata($transition);
+            $candidate = $metadata['batch'] ?? null;
+            if (null !== $candidate && (!is_int($candidate) || $candidate < 1 || !($metadata['async'] ?? false))) {
+                throw new \InvalidArgumentException(sprintf('Transition "%s" needs a positive batch size and async: true.', $name));
+            }
+            if ($found && $size !== $candidate) {
+                throw new \InvalidArgumentException(sprintf('Repeated transition "%s" has conflicting batch sizes.', $name));
+            }
+            $size = $candidate;
+            $found = true;
+        }
+        if (!$found) {
+            throw new \InvalidArgumentException(sprintf('Unknown transition "%s".', $name));
+        }
+
+        return $size;
+    }
+
     public function transport(WorkflowInterface $workflow, string $name, bool $forceSync = false): ?string
     {
         $route = null;
