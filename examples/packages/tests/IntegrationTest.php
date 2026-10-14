@@ -10,7 +10,6 @@ use Survos\WorkflowExample\Package;
 use Survos\WorkflowExample\PackageStore;
 use Survos\WorkflowExample\PackageWorkflow;
 use Survos\WorkflowExample\RunQueue;
-use Survos\WorkflowExtrasBundle\Service\NextTransitionResolver;
 use Survos\WorkflowMessengerBundle\Message\SubjectReference;
 use Survos\WorkflowMessengerBundle\Message\TransitionRequest;
 use Survos\WorkflowMessengerBundle\Service\TransitionDispatcher;
@@ -67,16 +66,11 @@ final class IntegrationTest extends TestCase
         RunQueue::once('package_metadata', $metadata, $bus);
         self::assertCount(1, $metadata->getAcknowledged());
         $package = $store->load($ref);
-        self::assertSame('loaded', $package->marking);
+        self::assertSame('valid', $package->marking);
         self::assertTrue($package->eligible);
         self::assertSame('Fetch metadata and README for a Symfony 8 bundle', $workflow->getMetadataStore()->getWorkflowMetadata()['description']);
         self::assertSame(['validate', 'reject'], $workflow->getMetadataStore()->getPlaceMetadata('loaded')['next']);
 
-        $next = $container->get('example.'.NextTransitionResolver::class)->firstEnabled($workflow, $package, ['reject', 'validate']);
-        self::assertSame('validate', $next);
-        $workflow->apply($package, $next);
-        $store->save($ref, $package);
-        $dispatcher->dispatch('package_readme', $ref, PackageWorkflow::FETCH_README);
         self::assertCount(1, $readme->getSent());
         self::assertSame('valid', $store->load($ref)->marking);
         RunQueue::once('package_readme', $readme, $bus);

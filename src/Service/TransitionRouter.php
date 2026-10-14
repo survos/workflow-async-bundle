@@ -13,7 +13,7 @@ final readonly class TransitionRouter
     {
     }
 
-    public function transport(WorkflowInterface $workflow, string $name): string
+    public function transport(WorkflowInterface $workflow, string $name, bool $forceSync = false): ?string
     {
         $route = null;
         $found = false;
@@ -22,11 +22,8 @@ final readonly class TransitionRouter
                 continue;
             }
             $metadata = $workflow->getMetadataStore()->getTransitionMetadata($transition);
-            if (($metadata['async'] ?? false) !== true) {
-                throw new \InvalidArgumentException(sprintf('Transition "%s" must declare async metadata as true.', $name));
-            }
-            $transport = $metadata['transport'] ?? $this->defaultTransport;
-            if (!is_string($transport) || !in_array($transport, $this->transports, true)) {
+            $transport = ($metadata['async'] ?? false) && !$forceSync ? ($metadata['transport'] ?? $this->defaultTransport) : (in_array('sync', $this->transports, true) ? 'sync' : null);
+            if (($metadata['async'] ?? false) && !$forceSync && (!is_string($transport) || !in_array($transport, $this->transports, true))) {
                 throw new \InvalidArgumentException(sprintf('Transition "%s" needs a configured consumable Messenger transport.', $name));
             }
             if ($found && $route !== $transport) {

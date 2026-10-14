@@ -100,10 +100,9 @@ final class AsyncTest extends TestCase
         (new TransitionRouter(null, ['downloads']))->transport($this->workflow([['async' => true, 'transport' => 'typo']]), 'go');
     }
 
-    public function testSynchronousTransitionCannotBeDispatched(): void
+    public function testSynchronousTransitionUsesTheBusWithoutAQueuedTransport(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-        (new TransitionRouter('downloads', ['downloads']))->transport($this->workflow([[]]), 'go');
+        self::assertNull((new TransitionRouter('downloads', ['downloads']))->transport($this->workflow([[]]), 'go'));
     }
 
     public function testListenerFailurePropagatesAndDoesNotSave(): void
@@ -113,7 +112,7 @@ final class AsyncTest extends TestCase
         $workflow->method('getDefinition')->willReturn($definition);
         $workflow->method('getMetadataStore')->willReturn($definition->getMetadataStore());
         $subject = new \stdClass();
-        $workflow->expects(self::once())->method('apply')->with($subject, 'go', ['trace' => 123])->willThrowException(new \RuntimeException('retry me'));
+        $workflow->expects(self::once())->method('apply')->with($subject, 'go', ['trace' => 123, 'workflow_extras.defer' => true])->willThrowException(new \RuntimeException('retry me'));
         $store = $this->createMock(SubjectStoreInterface::class);
         $store->method('load')->willReturn($subject);
         $store->expects(self::never())->method('save');

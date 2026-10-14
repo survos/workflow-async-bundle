@@ -14,6 +14,15 @@ final readonly class PackageStore implements SubjectStoreInterface
     {
     }
 
+    public function reference(object $subject): SubjectReference
+    {
+        if (!$subject instanceof Package) {
+            throw new \InvalidArgumentException('Unsupported workflow subject.');
+        }
+
+        return new SubjectReference('package', $subject->name);
+    }
+
     public function load(SubjectReference $reference): ?Package
     {
         $path = $this->path($reference);

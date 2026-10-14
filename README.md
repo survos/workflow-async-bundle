@@ -52,7 +52,7 @@ final class PackageWorkflow
 
 Our `Transition` extends workflow-extras and defaults to `async: true`. Its signature is:
 
-`from, to, description, label, next, guard, metadata, async, transport`
+`from, to, description, label, next, guard, metadata, icon, iconClass, async, transport`
 
 Every extras argument keeps its name, type, position and default; only `async`
 and `transport` are appended. Enum endpoints, weighted arcs, label and string-or-list
@@ -219,3 +219,19 @@ Workflow descriptions, `next` selection and future iteration/UI belong to
 The legacy [state-bundle](https://github.com/survos/state-bundle) remains supported;
 do not enable two registrars for the same workflow or discard old queued message
 classes during migration.
+
+## Shared continuation execution
+
+Extras owns NextTransitionRunner and the next listener. This bundle replaces
+TransitionExecutorInterface with MessengerTransitionExecutor. Every selected
+transition becomes a TransitionRequest. Unmarked transitions run through the sync
+transport when configured, otherwise directly through Messenger handlers; async
+metadata selects a queued transport. `cascade: sync` forces synchronous Messenger
+execution, while `cascade: none` stops subsequent selection.
+
+The handler defers next during native apply, calls SubjectStoreInterface::save(),
+then selects the next transition from saved state. The store must provide a stable
+reference(object), reload the subject, and make save() a safe persistence boundary.
+The native completed listener never dispatches before that boundary. Applications
+calling native apply directly can use an explicit post-flush adapter. A failed save
+must not schedule follow-on work. No nested workflow event flush is performed.

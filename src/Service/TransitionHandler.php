@@ -14,7 +14,7 @@ use Symfony\Component\Workflow\Exception\NotEnabledTransitionException;
 #[AsMessageHandler]
 final readonly class TransitionHandler
 {
-    public function __construct(private SubjectStoreInterface $store, private WorkflowLocator $workflows, private TransitionRouter $router)
+    public function __construct(private SubjectStoreInterface $store, private WorkflowLocator $workflows, private TransitionRouter $router, private ?\Survos\WorkflowExtrasBundle\Service\NextTransitionRunner $next = null)
     {
     }
 
@@ -25,7 +25,7 @@ final readonly class TransitionHandler
         }
         try {
             $workflow = $this->workflows->get($request->workflow);
-            $this->router->transport($workflow, $request->transition);
+            $this->router->transport($workflow, $request->transition, ($request->context['cascade'] ?? null) === 'sync');
         } catch (\InvalidArgumentException $e) {
             throw new UnrecoverableMessageHandlingException($e->getMessage(), previous: $e);
         }
@@ -34,8 +34,15 @@ final readonly class TransitionHandler
             // Fail loudly, never ack: retrying cannot make the subject appear, so the failure transport.
             throw new UnrecoverableMessageHandlingException(sprintf('Missing subject for workflow "%s" transition "%s".', $request->workflow, $request->transition));
         }
+        $previous = null;
+        foreach ($workflow->getEnabledTransitions($subject) as $transition) {
+            if ($transition->getName() === $request->transition) {
+                $previous = $transition;
+                break;
+            }
+        }
         try {
-            $workflow->apply($subject, $request->transition, $request->context);
+            $workflow->apply($subject, $request->transition, array_replace($request->context, ['workflow_extras.defer' => true]));
         } catch (NotEnabledTransitionException $e) {
             $reasons = [];
             foreach ($e->getTransitionBlockerList() as $blocker) {
@@ -45,6 +52,8 @@ final readonly class TransitionHandler
             return new TransitionResult($request->requestId, 'blocked', $reasons);
         }
         $this->store->save($request->subject, $subject, $request->context);
+
+        $this->next?->continue($workflow, $subject, $request->context, $previous);
 
         return new TransitionResult($request->requestId, 'applied');
     }

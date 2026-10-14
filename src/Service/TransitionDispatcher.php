@@ -18,9 +18,9 @@ final readonly class TransitionDispatcher
 
     public function dispatch(string $workflow, SubjectReference $subject, string $transition, array $context = []): Envelope
     {
-        $transport = $this->router->transport($this->workflows->get($workflow), $transition);
+        $transport = $this->router->transport($this->workflows->get($workflow), $transition, ($context['cascade'] ?? null) === 'sync');
         $request = new TransitionRequest($workflow, $subject, $transition, $context, bin2hex(random_bytes(16)));
 
-        return $this->bus->dispatch($request, [new TransportNamesStamp([$transport])]);
+        return $this->bus->dispatch($request, [new TransportNamesStamp(null === $transport ? [] : [$transport])]);
     }
 }

@@ -9,6 +9,8 @@ use Survos\WorkflowMessengerBundle\Message\SubjectReference;
 /** Applications own persistence, subject type validation and transaction/locking policy. */
 interface SubjectStoreInterface
 {
+    public function reference(object $subject): SubjectReference;
+
     public function load(SubjectReference $reference): ?object;
 
     /** Context from apply(), for application-owned continuation/persistence policy. */

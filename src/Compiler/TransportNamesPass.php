@@ -16,7 +16,7 @@ final class TransportNamesPass implements CompilerPassInterface
         $names = [];
         foreach ($container->findTaggedServiceIds('messenger.receiver') as $tags) {
             foreach ($tags as $tag) {
-                if (isset($tag['alias']) && ($tag['is_consumable'] ?? true) && !($tag['is_failure_transport'] ?? false)) {
+                if (isset($tag['alias']) && (($tag['is_consumable'] ?? true) || 'sync' === $tag['alias']) && !($tag['is_failure_transport'] ?? false)) {
                     $names[] = $tag['alias'];
                 }
             }
