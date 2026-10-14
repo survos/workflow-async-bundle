@@ -17,13 +17,17 @@ use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Kernel\RequiredBundle;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\Lock\LockBundle;
 use Symfony\Component\Messenger\MessengerBundle;
 use Symfony\Component\Workflow\WorkflowBundle;
+
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 #[RequiredBundle(SurvosKitBundle::class)]
 #[RequiredBundle(WorkflowBundle::class)]
 #[RequiredBundle(SurvosWorkflowExtrasBundle::class)]
 #[RequiredBundle(MessengerBundle::class)]
+#[RequiredBundle(LockBundle::class)]
 // Symfony\Component\HttpKernel\Bundle\Bundle <-- Flex auto-registration marker (see Survos\Kit\AbstractSurvosBundle)
 final class SurvosWorkflowMessengerBundle extends AbstractSurvosBundle
 {
@@ -36,8 +40,16 @@ final class SurvosWorkflowMessengerBundle extends AbstractSurvosBundle
     public function configure(DefinitionConfigurator $definition): void
     {
         $definition->rootNode()->children()
-            ->scalarNode('subject_store')->isRequired()->cannotBeEmpty()->end()
+            ->scalarNode('subject_store')
+                ->info('Service implementing SubjectStoreInterface; defaults to the Doctrine store when DoctrineBundle is installed.')
+                ->defaultNull()
+            ->end()
             ->scalarNode('default_transport')->defaultNull()->end()
+            ->scalarNode('lock_factory')
+                ->info('LockFactory serializing transitions per subject across workers. Use a store shared by every worker host.')
+                ->defaultValue('lock.factory')
+                ->cannotBeEmpty()
+            ->end()
         ->end();
     }
 
@@ -49,7 +61,14 @@ final class SurvosWorkflowMessengerBundle extends AbstractSurvosBundle
             $services->set($class);
         }
         $services->get(TransitionRouter::class)->arg('$defaultTransport', $config['default_transport']);
+        $services->get(TransitionHandler::class)->arg('$locks', service($config['lock_factory']));
         $services->alias(\Survos\WorkflowExtrasBundle\Contract\TransitionExecutorInterface::class, Service\MessengerTransitionExecutor::class);
-        $services->alias(SubjectStoreInterface::class, $config['subject_store']);
+        if (null === $store = $config['subject_store']) {
+            if (!class_exists(\Doctrine\Bundle\DoctrineBundle\DoctrineBundle::class)) {
+                throw new \LogicException('Configure survos_workflow_messenger.subject_store, or install doctrine/doctrine-bundle to use the default Doctrine subject store.');
+            }
+            $services->set($store = Doctrine\DoctrineSubjectStore::class);
+        }
+        $services->alias(SubjectStoreInterface::class, $store);
     }
 }

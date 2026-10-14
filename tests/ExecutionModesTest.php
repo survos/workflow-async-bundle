@@ -21,6 +21,9 @@ use Survos\WorkflowMessengerBundle\Service\TransitionRouter;
 use Survos\WorkflowMessengerBundle\Service\WorkflowLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
+use Symfony\Component\Messenger\Exception\RecoverableMessageHandlingException;
 use Symfony\Component\Messenger\Handler\HandlersLocator;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
@@ -96,7 +99,9 @@ final class ExecutionModesTest extends TestCase
         $executor = 'direct' === $mode ? new DirectTransitionExecutor() : new MessengerTransitionExecutor($dispatcher, $store);
         $runner = new NextTransitionRunner(new NextTransitionResolver(), $executor);
         $events->addListener('workflow.completed', (new NextTransitionListener($runner, new WorkflowCatalog($locator, ['example' => []]), $executor))->completed(...));
-        $handler = new TransitionHandler($store, new WorkflowLocator($locator), $router, $runner);
+        // Sync mode re-enters the handler for the same subject under the outer lock.
+        $locks = new LockFactory(new InMemoryStore());
+        $handler = new TransitionHandler($store, new WorkflowLocator($locator), $router, $locks, $runner);
         $runner->continue($workflow, $subject, 'sync' === $mode ? ['cascade' => 'sync'] : []);
         if ('queue' === $mode) {
             self::assertSame('new', $store->subject->marking, 'No work before a worker receives the message.');
@@ -115,5 +120,20 @@ final class ExecutionModesTest extends TestCase
         if ('direct' !== $mode) {
             self::assertSame(['loaded', 'done'], $store->saved, 'Persist each state before continuing.');
         }
+        self::assertTrue($locks->createLock('survos_workflow:example:1')->acquire(), 'The subject lock is released.');
+    }
+
+    public function testBusySubjectIsRetriedNotRunConcurrently(): void
+    {
+        $locks = new LockFactory(new InMemoryStore());
+        $competitor = $locks->createLock('survos_workflow:example:1');
+        $competitor->acquire();
+        $store = $this->createMock(SubjectStoreInterface::class);
+        $store->expects(self::never())->method('load');
+        $workflow = new StateMachine(new Definition(['new', 'done'], [new Transition('start', 'new', 'done')], 'new'), new MethodMarkingStore(true, 'marking'), null, 'example');
+        $handler = new TransitionHandler($store, new WorkflowLocator(new ServiceLocator(['example' => static fn () => $workflow])), new TransitionRouter('queue', ['queue']), $locks);
+
+        $this->expectException(RecoverableMessageHandlingException::class);
+        $handler(new TransitionRequest('example', new SubjectReference('example', '1'), 'start', [], 'test'));
     }
 }

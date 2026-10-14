@@ -105,19 +105,45 @@ so. Its required bundles provide Workflow Extras, Workflow, Messenger and Survos
 minimal kernel runs **without FrameworkBundle, Doctrine ORM or Twig installed**;
 kit still depends on HttpKernel.
 
-Implement [SubjectStoreInterface](src/Contract/SubjectStoreInterface.php) and
-register it as a service. A reference contains a stable domain `type` and string
-`id`. The adapter validates the type, loads a fresh subject and saves successful
-changes. Its `save(SubjectReference $reference, object $subject, array $context = [])`
-method receives the original apply context so application-owned continuation policy
-can honor options such as `cascade: none`. A plain object with a `marking` property works; Doctrine is optional.
-For a Doctrine application, use the entity's own manager, and define the
-transaction/locking policy explicitly rather than flushing unrelated work.
+With DoctrineBundle installed, the default `subject_store` is
+[DoctrineSubjectStore](src/Doctrine/DoctrineSubjectStore.php): the reference is the
+entity class and its single identifier, only classes a workflow `supports` are
+loaded, a worker refreshes the entity before applying, and saving flushes the
+entity's manager. Queuing inside an open transaction is rejected (there is no outbox).
+
+Without Doctrine, implement [SubjectStoreInterface](src/Contract/SubjectStoreInterface.php)
+and configure it as `subject_store`. A reference contains a stable `type` and string
+`id`; `save()` receives the original apply context. A plain object with a `marking`
+property works.
+
+Transitions of the same subject never run concurrently: the handler loads, applies,
+saves and continues each request under a per-subject lock
+(`survos_workflow:<type>:<id>`), so `can()` still holds at apply time and one worker
+cannot overwrite another's flush. A busy subject is retried a second later; other
+subjects run in parallel. A sync continuation of the same subject re-enters the lock
+it already holds. The lock is always on: the default `lock_factory: lock.factory` is
+Symfony Lock's default resource (semaphore or flock, enough for workers on one host).
+With workers on several hosts or containers, name a shared store, e.g. PostgreSQL
+advisory locks:
+
+```yaml
+framework:
+    lock:
+        default: '%env(LOCK_DSN)%'
+        database: { service_id: doctrine.dbal.default_connection, advisory: true }
+survos_workflow_messenger:
+    lock_factory: lock.database.factory
+```
+
+For a CLI run that should handle everything in-process, wrap it in
+`TransitionExecutorInterface::synchronously(fn () => ...)`: every transition it
+starts, including kickoffs, is dispatched with `cascade: sync`. `state:iterate --sync`
+does this.
 
 ```yaml
 # config/packages/survos_workflow_messenger.yaml
 survos_workflow_messenger:
-    subject_store: App\Workflow\PackageStore
+    # subject_store: App\Workflow\PackageStore # only without Doctrine
     default_transport: package_metadata # optional when every transition specifies one
 
 # config/packages/messenger.yaml -- component-owned configuration in Symfony 8.2

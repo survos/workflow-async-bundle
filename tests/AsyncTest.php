@@ -13,6 +13,8 @@ use Survos\WorkflowMessengerBundle\Service\TransitionHandler;
 use Survos\WorkflowMessengerBundle\Service\TransitionRouter;
 use Survos\WorkflowMessengerBundle\Service\WorkflowLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Workflow\Definition;
 use Symfony\Component\Workflow\Metadata\InMemoryMetadataStore;
 use Symfony\Component\Workflow\StateMachine;
@@ -117,7 +119,7 @@ final class AsyncTest extends TestCase
         $store->method('load')->willReturn($subject);
         $store->expects(self::never())->method('save');
         $locator = new WorkflowLocator(new ServiceLocator(['test' => static fn () => $workflow]));
-        $handler = new TransitionHandler($store, $locator, new TransitionRouter('downloads', ['downloads']));
+        $handler = new TransitionHandler($store, $locator, new TransitionRouter('downloads', ['downloads']), new LockFactory(new InMemoryStore()));
         $this->expectExceptionMessage('retry me');
         $handler(new TransitionRequest('test', new SubjectReference('test', '1'), 'go', ['trace' => 123], 'request-1'));
     }
@@ -132,7 +134,7 @@ final class AsyncTest extends TestCase
         $store = $this->createMock(SubjectStoreInterface::class);
         $store->method('load')->willReturn($subject);
         $store->expects(self::once())->method('save')->with($reference, $subject, ['cascade' => 'none']);
-        $handler = new TransitionHandler($store, new WorkflowLocator(new ServiceLocator(['test' => static fn () => $workflow])), new TransitionRouter('downloads', ['downloads']));
+        $handler = new TransitionHandler($store, new WorkflowLocator(new ServiceLocator(['test' => static fn () => $workflow])), new TransitionRouter('downloads', ['downloads']), new LockFactory(new InMemoryStore()));
         self::assertSame('applied', $handler(new TransitionRequest('test', $reference, 'go', ['cascade' => 'none'], 'request-1'))->status);
         self::assertSame('b', $subject->marking);
     }
@@ -143,7 +145,7 @@ final class AsyncTest extends TestCase
         $store = $this->createMock(SubjectStoreInterface::class);
         $store->method('load')->willReturn(null);
         $store->expects(self::never())->method('save');
-        $handler = new TransitionHandler($store, new WorkflowLocator(new ServiceLocator(['test' => static fn () => $workflow])), new TransitionRouter('downloads', ['downloads']));
+        $handler = new TransitionHandler($store, new WorkflowLocator(new ServiceLocator(['test' => static fn () => $workflow])), new TransitionRouter('downloads', ['downloads']), new LockFactory(new InMemoryStore()));
         $this->expectException(\Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException::class);
         $this->expectExceptionMessage('Missing subject for workflow "test" transition "go".');
         $handler(new TransitionRequest('test', new SubjectReference('test', 'gone'), 'go', [], 'request-1'));
