@@ -12,6 +12,7 @@ use Survos\WorkflowAsyncBundle\Service\TransitionDispatcher;
 use Survos\WorkflowAsyncBundle\Service\TransitionHandler;
 use Survos\WorkflowAsyncBundle\Service\TransitionRouter;
 use Survos\WorkflowAsyncBundle\Service\WorkflowLocator;
+use Survos\WorkflowExtrasBundle\SurvosWorkflowExtrasBundle;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Kernel\RequiredBundle;
@@ -21,6 +22,7 @@ use Symfony\Component\Workflow\WorkflowBundle;
 
 #[RequiredBundle(SurvosKitBundle::class)]
 #[RequiredBundle(WorkflowBundle::class)]
+#[RequiredBundle(SurvosWorkflowExtrasBundle::class)]
 #[RequiredBundle(MessengerBundle::class)]
 // Symfony\Component\HttpKernel\Bundle\Bundle <-- Flex auto-registration marker (see Survos\Kit\AbstractSurvosBundle)
 final class SurvosWorkflowAsyncBundle extends AbstractSurvosBundle

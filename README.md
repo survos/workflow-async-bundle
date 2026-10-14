@@ -50,9 +50,14 @@ final class PackageWorkflow
 }
 ```
 
-Our `Transition` defaults to `async: true`. Native arguments (`from`, `to`, `guard`,
-`description`, `metadata`) retain their types and order, including enum cases and weighted `Arc`
-values. It is repeatable. The equivalent native declaration is:
+Our `Transition` extends workflow-extras and defaults to `async: true`. Its signature is:
+
+`from, to, description, label, next, guard, metadata, async, transport`
+
+Every extras argument keeps its name, type, position and default; only `async`
+and `transport` are appended. Enum endpoints, weighted arcs, label and string-or-list
+next candidates are supported. Use named arguments after description when migrating
+from the old native-order signature. The attribute is repeatable. Equivalent native metadata:
 
 ```php
 #[\Symfony\Component\Workflow\Attribute\Transition(
@@ -72,8 +77,8 @@ place and transition instead of relying on inferred places. That gives humans
 and tools a complete, documented definition. Native backed enum cases work too;
 enums are optional.
 
-That equivalence also lets workflow-extras attributes opt into async without a
-mandatory dependency between the two bundles. Use one transition attribute for
+Async requires workflow-extras and enables its bundle. Extras can still be used
+without async. Native metadata remains supported for interoperability. Use one transition attribute for
 each transition definition, rather than stacking competing descriptions of it.
 Typed options reject conflicting metadata; `async: false` cannot specify a
 transport. For repeated definitions of one transition name, async intent and the
@@ -96,7 +101,7 @@ Pin a development revision containing #66687; an older cached 8.2 lockfile can
 still have final attributes. Move to a containing 8.2 release when available.
 
 Enable `Survos\WorkflowAsyncBundle\SurvosWorkflowAsyncBundle` if Flex has not done
-so. Its required bundles provide Workflow, Messenger and Survos Kit. The tested
+so. Its required bundles provide Workflow Extras, Workflow, Messenger and Survos Kit. The tested
 minimal kernel runs **without FrameworkBundle, Doctrine ORM or Twig installed**;
 kit still depends on HttpKernel.
 
@@ -157,10 +162,9 @@ and saves after successful execution. Standard `AsTransitionListener` listeners
 run in that worker. Calling native `apply()` yourself remains synchronous even
 if async metadata is present; this bundle never intercepts it.
 
-Handler results report `applied`, `blocked` (including blocker messages) or
-`missing`. They are available through Messenger's `HandledStamp`, including to
-worker event subscribers. Blocked and missing requests are acknowledged rather
-than retried. Configuration errors are unrecoverable; listener, network and
+Handler results report `applied` or `blocked` (including blocker messages). They are available through Messenger's `HandledStamp`, including to
+worker event subscribers. Blocked requests are acknowledged rather
+than retried. Missing subjects and configuration errors are unrecoverable failures; listener, network and
 persistence failures propagate to Messenger's configured failure handling.
 The scaffold does not yet supply a metrics/logging subscriber.
 

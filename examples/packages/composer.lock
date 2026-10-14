@@ -409,12 +409,13 @@
             "dist": {
                 "type": "path",
                 "url": "../..",
-                "reference": "74d8c4ae4da7e3be2c5dfc540cb0d752f0c243de"
+                "reference": "f3771435fc101d20e2900d23fc394eb474a9a66e"
             },
             "require": {
                 "php": "^8.5",
                 "psr/container": "^2.0",
                 "survos/kit-bundle": "^2.5",
+                "survos/workflow-extras-bundle": "^0.1@dev",
                 "symfony/config": "8.2.*@dev",
                 "symfony/dependency-injection": "8.2.*@dev",
                 "symfony/event-dispatcher": "8.2.*@dev",

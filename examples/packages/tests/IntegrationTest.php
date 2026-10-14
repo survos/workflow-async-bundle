@@ -89,12 +89,17 @@ final class IntegrationTest extends TestCase
         self::assertNotEmpty($result->reasons);
     }
 
-    public function testMissingSubjectsAreReportedWithoutRetry(): void
+    public function testMissingSubjectsFailWithoutRetry(): void
     {
         $bus = $this->kernel->getContainer()->get('example.messenger.default_bus');
         $request = new TransitionRequest('package_readme', new SubjectReference('package', 'missing/bundle'), 'load', requestId: 'missing-test');
-        $result = $bus->dispatch($request, [new ReceivedStamp('package_metadata')])->last(HandledStamp::class)->getResult();
-        self::assertSame('missing', $result->status);
+        try {
+            $bus->dispatch($request, [new ReceivedStamp('package_metadata')]);
+            self::fail('Missing subjects must fail instead of being acknowledged.');
+        } catch (\Symfony\Component\Messenger\Exception\HandlerFailedException $exception) {
+            self::assertInstanceOf(\Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException::class, $exception->getPrevious());
+            self::assertStringContainsString('Missing subject', $exception->getMessage());
+        }
     }
 
     public function testMissingReadmeCompletesNormally(): void

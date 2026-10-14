@@ -4,21 +4,25 @@ declare(strict_types=1);
 
 namespace Survos\WorkflowAsyncBundle\Attribute;
 
+use Survos\WorkflowExtrasBundle\Attribute\Transition as ExtrasTransition;
 use Symfony\Component\Workflow\Arc;
-use Symfony\Component\Workflow\Attribute\Transition as NativeTransition;
 
 /**
- * Native Transition (from, to, description, guard, metadata) plus `async` and `transport`.
+ * Extras Transition arguments unchanged, followed by `async` and `transport`.
  */
 #[\Attribute(\Attribute::TARGET_CLASS_CONSTANT | \Attribute::IS_REPEATABLE)]
-class Transition extends NativeTransition
+class Transition extends ExtrasTransition
 {
     public function __construct(
         \BackedEnum|Arc|string|array $from,
         \BackedEnum|Arc|string|array $to,
         ?string $description = null,
+        ?string $label = null,
+        string|array|null $next = null,
         ?string $guard = null,
         array $metadata = [],
+        ?string $icon = null,
+        ?string $iconClass = null,
         bool $async = true,
         ?string $transport = null,
     ) {
@@ -30,6 +34,6 @@ class Transition extends NativeTransition
         if (!$async && null !== $transport) {
             throw new \InvalidArgumentException('A transport requires async: true.');
         }
-        parent::__construct($from, $to, description: $description, guard: $guard, metadata: array_replace($metadata, ['async' => $async, 'transport' => $transport]));
+        parent::__construct($from, $to, description: $description, label: $label, next: $next, guard: $guard, icon: $icon, iconClass: $iconClass, metadata: array_replace($metadata, ['async' => $async, 'transport' => $transport]));
     }
 }

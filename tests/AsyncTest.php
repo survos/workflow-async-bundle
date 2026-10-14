@@ -23,15 +23,56 @@ final class AsyncTest extends TestCase
 {
     public function testAttributePreservesNativeArgumentsAndUsesTypedRouting(): void
     {
-        $attribute = new AsyncTransition('a', 'b', 'Fetch', 'subject.ready', transport: 'downloads');
+        $attribute = new AsyncTransition('a', 'b', 'Fetch', guard: 'subject.ready', transport: 'downloads');
         self::assertSame('subject.ready', $attribute->guard);
-        self::assertSame(['async' => true, 'transport' => 'downloads', 'description' => 'Fetch'], $attribute->metadata);
+        self::assertSame(['async' => true, 'transport' => 'downloads', 'guard' => 'subject.ready', 'description' => 'Fetch'], $attribute->metadata);
     }
 
     public function testConflictingAttributeMetadataIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         new AsyncTransition('a', 'b', metadata: ['async' => false]);
+    }
+
+    public function testAsyncAppendsToTheExactExtrasSignature(): void
+    {
+        $extras = (new \ReflectionMethod(\Survos\WorkflowExtrasBundle\Attribute\Transition::class, '__construct'))->getParameters();
+        $async = (new \ReflectionMethod(AsyncTransition::class, '__construct'))->getParameters();
+        foreach ($extras as $i => $parameter) {
+            self::assertSame($parameter->getName(), $async[$i]->getName());
+            self::assertSame((string) $parameter->getType(), (string) $async[$i]->getType());
+            self::assertSame($parameter->isDefaultValueAvailable(), $async[$i]->isDefaultValueAvailable());
+            if ($parameter->isDefaultValueAvailable()) {
+                self::assertSame($parameter->getDefaultValue(), $async[$i]->getDefaultValue());
+            }
+        }
+        self::assertSame(['async', 'transport'], array_map(static fn ($p) => $p->getName(), array_slice($async, count($extras))));
+        $attribute = new AsyncTransition('a', 'b', 'Fetch', 'Load', 'validate', 'subject.ready', ['color' => 'blue'], 'tabler:download', 'text-primary', true, 'downloads');
+        self::assertInstanceOf(\Survos\WorkflowExtrasBundle\Attribute\Transition::class, $attribute);
+        self::assertSame('Load', $attribute->metadata['label']);
+        self::assertSame(['validate'], $attribute->metadata['next']);
+        self::assertSame('subject.ready', $attribute->guard);
+        self::assertSame('downloads', $attribute->metadata['transport']);
+    }
+
+    public function testTransportRequiresAsync(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        new AsyncTransition('a', 'b', async: false, transport: 'downloads');
+    }
+
+    public function testNativeReaderPreservesAsyncAndExtrasMetadataWithEnumEndpoints(): void
+    {
+        $class = new \ReflectionClass(AsyncEnumDefinition::class);
+        $attribute = $class->getAttributes(\Symfony\Component\Workflow\Attribute\AsWorkflow::class)[0]->newInstance();
+        $config = (new \Symfony\Component\Workflow\DependencyInjection\AttributeReader())->read($attribute, $class)['async_enum'];
+        $transition = $config['transitions'][0];
+        self::assertSame([['place' => 'new']], $transition['from']);
+        self::assertSame([['place' => 'done']], $transition['to']);
+        self::assertSame('Finish', $transition['metadata']['label']);
+        self::assertSame(['notify'], $transition['metadata']['next']);
+        self::assertTrue($transition['metadata']['async']);
+        self::assertSame('downloads', $transition['metadata']['transport']);
     }
 
     public function testObjectsCannotBeSerializedAsContext(): void
@@ -121,4 +162,17 @@ final class AsyncTest extends TestCase
 
         return new StateMachine(new Definition(['a', 'b'], $transitions, 'a', new InMemoryMetadataStore([], [], $store)));
     }
+}
+
+enum AsyncEnumPlace: string
+{
+    case New = 'new';
+    case Done = 'done';
+}
+
+#[\Symfony\Component\Workflow\Attribute\AsWorkflow(name: 'async_enum', places: AsyncEnumPlace::class)]
+final class AsyncEnumDefinition
+{
+    #[AsyncTransition(AsyncEnumPlace::New, AsyncEnumPlace::Done, label: 'Finish', next: 'notify', transport: 'downloads')]
+    public const FINISH = 'finish';
 }
