@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Survos\WorkflowExample;
 
-use Survos\WorkflowAsyncBundle\Service\TransitionDispatcher;
-use Survos\WorkflowAsyncBundle\SurvosWorkflowAsyncBundle;
 use Survos\WorkflowExtrasBundle\Service\NextTransitionResolver;
 use Survos\WorkflowExtrasBundle\SurvosWorkflowExtrasBundle;
+use Survos\WorkflowMessengerBundle\Service\TransitionDispatcher;
+use Survos\WorkflowMessengerBundle\SurvosWorkflowMessengerBundle;
 use Symfony\Component\DependencyInjection\Kernel\AbstractKernel;
 use Symfony\Component\DependencyInjection\Kernel\KernelTrait;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -40,7 +40,7 @@ final class ExampleKernel extends AbstractKernel
 
     public function registerBundles(): iterable
     {
-        yield new SurvosWorkflowAsyncBundle();
+        yield new SurvosWorkflowMessengerBundle();
         yield new SurvosWorkflowExtrasBundle();
     }
 
@@ -51,7 +51,7 @@ final class ExampleKernel extends AbstractKernel
             'package_metadata' => ['dsn' => 'in-memory://', 'options' => ['serialize' => true]],
             'package_readme' => ['dsn' => 'in-memory://', 'options' => ['serialize' => true]],
         ]]);
-        $container->extension('survos_workflow_async', ['subject_store' => PackageStore::class]);
+        $container->extension('survos_workflow_messenger', ['subject_store' => PackageStore::class]);
         $services = $container->services()->defaults()->autowire()->autoconfigure();
         $services->set(PackageStore::class)->arg('$directory', $this->directory.'/subjects')->public();
         $services->set(PackageWorkflow::class);

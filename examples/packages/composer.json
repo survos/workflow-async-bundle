@@ -5,7 +5,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.5",
-        "survos/workflow-async-bundle": "^0.1@dev",
+        "survos/workflow-messenger-bundle": "^0.1@dev",
         "survos/workflow-extras-bundle": "^0.1@dev",
         "survos/kit-bundle": "^2.5@dev",
         "symfony/console": "8.2.*@dev",
@@ -24,7 +24,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "survos/workflow-async-bundle": "0.1.x-dev"
+                    "survos/workflow-messenger-bundle": "0.1.x-dev"
                 }
             }
         },
@@ -57,7 +57,7 @@
     "autoload-dev": {
         "psr-4": {
             "Survos\\WorkflowExample\\Tests\\": "tests/",
-            "Survos\\WorkflowAsyncBundle\\Tests\\": "../../tests/",
+            "Survos\\WorkflowMessengerBundle\\Tests\\": "../../tests/",
             "Survos\\WorkflowExtrasBundle\\Tests\\": "../../../workflow-extras-bundle/tests/"
         }
     },

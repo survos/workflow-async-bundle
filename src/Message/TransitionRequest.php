@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Survos\WorkflowAsyncBundle\Message;
+namespace Survos\WorkflowMessengerBundle\Message;
 
 /** Versioned data only; never put entities or events in a queue. */
 final readonly class TransitionRequest

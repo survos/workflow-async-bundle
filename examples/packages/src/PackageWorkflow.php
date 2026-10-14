@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Survos\WorkflowExample;
 
 use Composer\Semver\Semver;
-use Survos\WorkflowAsyncBundle\Attribute\Transition as AsyncTransition;
 use Survos\WorkflowExtrasBundle\Attribute\Place;
 use Survos\WorkflowExtrasBundle\Attribute\Transition;
+use Survos\WorkflowMessengerBundle\Attribute\Transition as AsyncTransition;
 use Symfony\Component\Workflow\Attribute\AsGuardListener;
 use Symfony\Component\Workflow\Attribute\AsTransitionListener;
 use Symfony\Component\Workflow\Attribute\AsWorkflow;

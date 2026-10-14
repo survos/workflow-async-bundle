@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Survos\WorkflowAsyncBundle\Contract;
+namespace Survos\WorkflowMessengerBundle\Contract;
 
-use Survos\WorkflowAsyncBundle\Message\SubjectReference;
+use Survos\WorkflowMessengerBundle\Message\SubjectReference;
 
 /** Applications own persistence, subject type validation and transaction/locking policy. */
 interface SubjectStoreInterface

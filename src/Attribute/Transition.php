@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Survos\WorkflowAsyncBundle\Attribute;
+namespace Survos\WorkflowMessengerBundle\Attribute;
 
 use Survos\WorkflowExtrasBundle\Attribute\Transition as ExtrasTransition;
 use Symfony\Component\Workflow\Arc;

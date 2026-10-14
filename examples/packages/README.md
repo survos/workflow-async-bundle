@@ -25,7 +25,7 @@ extras/kit path repositories with their published packages or equivalent sibling
 checkouts first.
 
 ```bash
-cd bu/workflow-async-bundle/examples/packages
+cd bu/workflow-messenger-bundle/examples/packages
 composer install --no-plugins --no-scripts
 php demo.php --offline
 php demo.php symfony/monolog-bundle

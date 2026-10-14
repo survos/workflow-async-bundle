@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Survos\WorkflowExample;
 
-use Survos\WorkflowAsyncBundle\Contract\SubjectStoreInterface;
-use Survos\WorkflowAsyncBundle\Message\SubjectReference;
+use Survos\WorkflowMessengerBundle\Contract\SubjectStoreInterface;
+use Survos\WorkflowMessengerBundle\Message\SubjectReference;
 
 /** Tutorial persistence only: atomic writes, but no transaction or concurrency protection. */
 final readonly class PackageStore implements SubjectStoreInterface

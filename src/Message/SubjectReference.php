@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Survos\WorkflowAsyncBundle\Message;
+namespace Survos\WorkflowMessengerBundle\Message;
 
 final readonly class SubjectReference
 {

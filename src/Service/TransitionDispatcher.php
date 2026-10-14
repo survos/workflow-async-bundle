@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Survos\WorkflowAsyncBundle\Service;
+namespace Survos\WorkflowMessengerBundle\Service;
 
-use Survos\WorkflowAsyncBundle\Message\SubjectReference;
-use Survos\WorkflowAsyncBundle\Message\TransitionRequest;
+use Survos\WorkflowMessengerBundle\Message\SubjectReference;
+use Survos\WorkflowMessengerBundle\Message\TransitionRequest;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;

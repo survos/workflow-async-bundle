@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Survos\WorkflowAsyncBundle\Tests;
+namespace Survos\WorkflowMessengerBundle\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Survos\WorkflowAsyncBundle\Attribute\Transition as AsyncTransition;
-use Survos\WorkflowAsyncBundle\Contract\SubjectStoreInterface;
-use Survos\WorkflowAsyncBundle\Message\SubjectReference;
-use Survos\WorkflowAsyncBundle\Message\TransitionRequest;
-use Survos\WorkflowAsyncBundle\Service\TransitionHandler;
-use Survos\WorkflowAsyncBundle\Service\TransitionRouter;
-use Survos\WorkflowAsyncBundle\Service\WorkflowLocator;
+use Survos\WorkflowMessengerBundle\Attribute\Transition as AsyncTransition;
+use Survos\WorkflowMessengerBundle\Contract\SubjectStoreInterface;
+use Survos\WorkflowMessengerBundle\Message\SubjectReference;
+use Survos\WorkflowMessengerBundle\Message\TransitionRequest;
+use Survos\WorkflowMessengerBundle\Service\TransitionHandler;
+use Survos\WorkflowMessengerBundle\Service\TransitionRouter;
+use Survos\WorkflowMessengerBundle\Service\WorkflowLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Workflow\Definition;
 use Symfony\Component\Workflow\Metadata\InMemoryMetadataStore;

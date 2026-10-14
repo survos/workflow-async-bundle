@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use Survos\WorkflowAsyncBundle\Message\SubjectReference;
-use Survos\WorkflowAsyncBundle\Service\TransitionDispatcher;
 use Survos\WorkflowExample\ExampleKernel;
 use Survos\WorkflowExample\Package;
 use Survos\WorkflowExample\PackageStore;
 use Survos\WorkflowExample\PackageWorkflow;
 use Survos\WorkflowExample\RunQueue;
 use Survos\WorkflowExtrasBundle\Service\NextTransitionResolver;
+use Survos\WorkflowMessengerBundle\Message\SubjectReference;
+use Survos\WorkflowMessengerBundle\Service\TransitionDispatcher;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;

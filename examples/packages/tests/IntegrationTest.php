@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Survos\WorkflowExample\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Survos\WorkflowAsyncBundle\Message\SubjectReference;
-use Survos\WorkflowAsyncBundle\Message\TransitionRequest;
-use Survos\WorkflowAsyncBundle\Service\TransitionDispatcher;
 use Survos\WorkflowExample\ExampleKernel;
 use Survos\WorkflowExample\Package;
 use Survos\WorkflowExample\PackageStore;
 use Survos\WorkflowExample\PackageWorkflow;
 use Survos\WorkflowExample\RunQueue;
 use Survos\WorkflowExtrasBundle\Service\NextTransitionResolver;
+use Survos\WorkflowMessengerBundle\Message\SubjectReference;
+use Survos\WorkflowMessengerBundle\Message\TransitionRequest;
+use Survos\WorkflowMessengerBundle\Service\TransitionDispatcher;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;

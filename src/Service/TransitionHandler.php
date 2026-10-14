@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Survos\WorkflowAsyncBundle\Service;
+namespace Survos\WorkflowMessengerBundle\Service;
 
-use Survos\WorkflowAsyncBundle\Contract\SubjectStoreInterface;
-use Survos\WorkflowAsyncBundle\Message\TransitionRequest;
-use Survos\WorkflowAsyncBundle\Message\TransitionResult;
+use Survos\WorkflowMessengerBundle\Contract\SubjectStoreInterface;
+use Survos\WorkflowMessengerBundle\Message\TransitionRequest;
+use Survos\WorkflowMessengerBundle\Message\TransitionResult;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 use Symfony\Component\Workflow\Exception\NotEnabledTransitionException;

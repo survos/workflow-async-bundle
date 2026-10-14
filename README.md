@@ -23,7 +23,7 @@ work instead of maintaining another definition reader or registrar.
 You can use native attributes with metadata, or the optional typed attribute:
 
 ```php
-use Survos\WorkflowAsyncBundle\Attribute\Transition;
+use Survos\WorkflowMessengerBundle\Attribute\Transition;
 use Symfony\Component\Workflow\Attribute\AsWorkflow;
 use Symfony\Component\Workflow\Attribute\Place;
 
@@ -91,7 +91,7 @@ After the split repositories have been published and registered on Packagist:
 ```bash
 composer config minimum-stability dev
 composer config prefer-stable true
-composer require 'survos/workflow-async-bundle:dev-main' --with-all-dependencies --no-scripts
+composer require 'survos/workflow-messenger-bundle:dev-main' --with-all-dependencies --no-scripts
 ```
 
 An existing application's Symfony constraints (including Flex's `extra.symfony.require`)
@@ -100,7 +100,7 @@ expect a library's `minimum-stability` setting to override the application's.
 Pin a development revision containing #66687; an older cached 8.2 lockfile can
 still have final attributes. Move to a containing 8.2 release when available.
 
-Enable `Survos\WorkflowAsyncBundle\SurvosWorkflowAsyncBundle` if Flex has not done
+Enable `Survos\WorkflowMessengerBundle\SurvosWorkflowMessengerBundle` if Flex has not done
 so. Its required bundles provide Workflow Extras, Workflow, Messenger and Survos Kit. The tested
 minimal kernel runs **without FrameworkBundle, Doctrine ORM or Twig installed**;
 kit still depends on HttpKernel.
@@ -115,8 +115,8 @@ For a Doctrine application, use the entity's own manager, and define the
 transaction/locking policy explicitly rather than flushing unrelated work.
 
 ```yaml
-# config/packages/survos_workflow_async.yaml
-survos_workflow_async:
+# config/packages/survos_workflow_messenger.yaml
+survos_workflow_messenger:
     subject_store: App\Workflow\PackageStore
     default_transport: package_metadata # optional when every transition specifies one
 
@@ -140,7 +140,7 @@ Persist **and commit** the subject before enqueueing:
 ```php
 $dispatcher->dispatch(
     'packages',
-    new \Survos\WorkflowAsyncBundle\Message\SubjectReference('package', $packageId),
+    new \Survos\WorkflowMessengerBundle\Message\SubjectReference('package', $packageId),
     PackageWorkflow::LOAD,
     context: ['requested_by' => 'import'],
 );
@@ -191,7 +191,7 @@ then fetch the README of an eligible Symfony 8 bundle on a second queue.
 From a **mono checkout**, with PHP 8.5:
 
 ```bash
-cd bu/workflow-async-bundle/examples/packages
+cd bu/workflow-messenger-bundle/examples/packages
 composer install --no-plugins --no-scripts
 php demo.php --offline
 # Or a real package, using Packagist and GitHub:

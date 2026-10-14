@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Survos\WorkflowAsyncBundle\Service;
+namespace Survos\WorkflowMessengerBundle\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;

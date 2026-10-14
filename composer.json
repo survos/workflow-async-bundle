@@ -1,5 +1,5 @@
 {
-    "name": "survos/workflow-async-bundle",
+    "name": "survos/workflow-messenger-bundle",
     "description": "Queued native Symfony workflow transitions through Messenger",
     "type": "symfony-bundle",
     "license": "MIT",
@@ -27,12 +27,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Survos\\WorkflowAsyncBundle\\": "src/"
+            "Survos\\WorkflowMessengerBundle\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Survos\\WorkflowAsyncBundle\\Tests\\": "tests/"
+            "Survos\\WorkflowMessengerBundle\\Tests\\": "tests/"
         }
     },
     "minimum-stability": "dev",

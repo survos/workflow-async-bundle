@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Survos\WorkflowAsyncBundle\Compiler;
+namespace Survos\WorkflowMessengerBundle\Compiler;
 
-use Survos\WorkflowAsyncBundle\Service\TransitionRouter;
+use Survos\WorkflowMessengerBundle\Service\TransitionRouter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
